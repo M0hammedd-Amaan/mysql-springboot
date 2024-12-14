@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spring Boot User Management</title>
+    <style>
+        body {
+            background: linear-gradient(90deg, #f0da4b, #ff005e); /* Gradient background */
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centers content horizontally */
+            justify-content: center; /* Centers content vertically */
+            height: 100vh; /* Ensures the body takes up the full height */
+        }
+
+        table, th, td {
+            border: 3px solid black;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+
+        #top-right-image {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+        }
+
+        h1, h2, form, table {
+            text-align: center;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+<!-- Top-right image -->
+<div id="top-right-image">
+    <img src="bs.png" alt="bs" height="70px" width="70px">
+</div>
+
+<!-- Centered content -->
+<h1>User Management</h1>
+
+<!-- Insert User Form -->
+<h2>Insert User</h2>
+<form id="userForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" placeholder="name" required>
+    <button type="submit">Add User</button>
+</form>
+
+<!-- User Table -->
+<h2>Users</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody id="userTable"></tbody>
+</table>
+
+<script>
+    // Load Users on Page Load
+    async function loadUsers() {
+        const response = await fetch('/users');
+        const users = await response.json();
+        const userTable = document.getElementById('userTable');
+        userTable.innerHTML = ''; // Clear previous data
+
+        users.forEach(user => {
+            userTable.innerHTML += `
+                        <tr>
+                            <td>${user.id}</td>
+                            <td>${user.name}</td>
+                            <td>
+                                <button onclick="deleteUser(${user.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+        });
+    }
+
+    // Add User
+    document.getElementById('userForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('name').value;
+        await fetch('/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        document.getElementById('name').value = ''; // Clear input
+        loadUsers(); // Refresh table
+    };
+
+    // Delete User
+    async function deleteUser(id) {
+        await fetch(`/users/${id}`, {
+            method: 'DELETE'
+        });
+        loadUsers(); // Refresh table
+    }
+
+    loadUsers(); // Load users initially
+</script>
+</body>
+</html>
